@@ -767,6 +767,127 @@
       max-width: 80%;
     }
 
+    /* ===== NEW IMPROVEMENTS ===== */
+    .progress-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      position: relative;
+    }
+
+    .progress-step:not(:last-child):after {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background-color: var(--border-color);
+      z-index: 1;
+    }
+
+    .step-number {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: var(--border-color);
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      z-index: 2;
+      transition: var(--transition);
+    }
+
+    .step-active .step-number {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+
+    .step-completed .step-number {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .step-label {
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .quiz-navigation {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+    }
+
+    .question-counter {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .video-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .video-time {
+      font-size: 0.9rem;
+      color: white;
+    }
+
+    .video-controls button {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      z-index: 1000;
+      transform: translateX(150%);
+      transition: transform 0.3s ease;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .notification-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .notification-error {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .notification-warning {
+      background-color: var(--warning-color);
+      color: white;
+    }
+
     .hidden { display: none !important; }
     .mt-1 { margin-top: 1rem; }
     .mt-2 { margin-top: 2rem; }
@@ -787,6 +908,13 @@
       .certificate-footer {
         flex-direction: column;
         gap: 1rem;
+      }
+      .progress-indicator {
+        flex-wrap: wrap;
+      }
+      .progress-step {
+        min-width: 50%;
+        margin-bottom: 1rem;
       }
     }
   </style>
@@ -811,6 +939,30 @@
     </header>
 
     <main class="main-area">
+      <!-- Progress Indicator -->
+      <div class="progress-indicator" id="progressIndicator">
+        <div class="progress-step step-active" id="step1">
+          <div class="step-number">1</div>
+          <div class="step-label">Registration</div>
+        </div>
+        <div class="progress-step" id="step2">
+          <div class="step-number">2</div>
+          <div class="step-label">Acknowledgement</div>
+        </div>
+        <div class="progress-step" id="step3">
+          <div class="step-number">3</div>
+          <div class="step-label">Module Selection</div>
+        </div>
+        <div class="progress-step" id="step4">
+          <div class="step-number">4</div>
+          <div class="step-label">Training & Quiz</div>
+        </div>
+        <div class="progress-step" id="step5">
+          <div class="step-number">5</div>
+          <div class="step-label">Results</div>
+        </div>
+      </div>
+
       <!-- ================= NEW JOINER FLOW ================= -->
 
       <!-- Step 1: Registration -->
@@ -832,7 +984,7 @@
           <label>Date of Joining
             <input type="date" id="empDOJ" required />
           </label>
-          <button type="submit" class="btn-primary">Continue</button>
+          <button type="submit" class="btn-primary form-full-width">Continue</button>
         </form>
       </section>
 
@@ -889,6 +1041,10 @@
             <source id="trainingVideoSource" src="" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
+          <div class="video-controls">
+            <button id="btnPlayPause">⏯️</button>
+            <div class="video-time" id="videoTime">0:00 / 0:00</div>
+          </div>
           <div class="video-progress-container">
             <div class="video-progress-bar" id="videoProgressBar"></div>
           </div>
@@ -905,9 +1061,14 @@
         <p class="info">
           Answer all questions based on the video. Pass mark is <span id="passMarkLabel"></span>%.
         </p>
+        <div class="question-counter" id="questionCounter">Question 1 of 2</div>
         <form id="quizForm">
           <div id="quizQuestions" class="quiz-list"></div>
-          <button type="submit" class="btn-primary">Submit Quiz</button>
+          <div class="quiz-navigation">
+            <button type="button" id="btnPrevQuestion" class="btn-secondary">Previous</button>
+            <button type="button" id="btnNextQuestion" class="btn-primary">Next</button>
+          </div>
+          <button type="submit" class="btn-primary form-full-width mt-1" id="btnSubmitQuiz">Submit Quiz</button>
         </form>
         <p id="quizResult" class="quiz-result"></p>
       </section>
@@ -951,7 +1112,7 @@
           <label>Password
             <input type="password" id="adminPass" required />
           </label>
-          <button type="submit" class="btn-primary">Login</button>
+          <button type="submit" class="btn-primary form-full-width">Login</button>
         </form>
         <p class="info small">
           Default: <strong>admin / admin123</strong>
@@ -1067,7 +1228,7 @@
               <button type="button" id="addQuestionBtn" class="btn-secondary">Add Question</button>
             </div>
 
-            <button type="submit" class="btn-primary">Add Module</button>
+            <button type="submit" class="btn-primary form-full-width">Add Module</button>
           </form>
         </div>
 
@@ -1105,7 +1266,7 @@
                 <option value="superadmin">Super Admin</option>
               </select>
             </label>
-            <button type="submit" class="btn-primary">Add Admin</button>
+            <button type="submit" class="btn-primary form-full-width">Add Admin</button>
           </form>
 
           <h3 class="section-title mt-2">Change Password</h3>
@@ -1119,7 +1280,7 @@
             <label>Confirm New Password
               <input type="password" id="confirmNewPassword" required />
             </label>
-            <button type="submit" class="btn-primary">Change Password</button>
+            <button type="submit" class="btn-primary form-full-width">Change Password</button>
           </form>
         </div>
 
@@ -1159,7 +1320,7 @@
                 <label>Default Pass Mark (%)
                   <input type="number" id="defaultPassMark" value="70" min="0" max="100" />
                 </label>
-                <button type="submit" class="btn-primary">Save Settings</button>
+                <button type="submit" class="btn-primary form-full-width">Save Settings</button>
               </form>
             </div>
           </div>
@@ -1167,6 +1328,9 @@
       </section>
     </main>
   </div>
+
+  <!-- Notification System -->
+  <div id="notification" class="notification"></div>
 
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -1177,6 +1341,18 @@
     // ================= GOOGLE SHEETS BACKEND CONFIG =================
     // 🔧 Replace this with your deployed Apps Script Web App URL
     const API_URL = "https://script.google.com/macros/s/AKfycbyVP0WUL1jVaLo6kFO3b43dbDtLinJlmxCKD6HA80DqGduR6di3pAd4b-5X09TDEXDz/exec";
+
+    // Notification system
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = `notification notification-${type}`;
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
 
     async function sheetPost(action, payload = {}) {
       try {
@@ -1192,6 +1368,7 @@
         return data.data || null;
       } catch (err) {
         console.error('sheetPost failed:', err);
+        showNotification('Connection error. Using offline mode.', 'warning');
         throw err;
       }
     }
@@ -1350,7 +1527,8 @@
       charts: {
         passFailChart: null,
         moduleUsageChart: null
-      }
+      },
+      currentQuestionIndex: 0
     };
 
     // ===== THEME MANAGEMENT =====
@@ -1376,6 +1554,9 @@
     const navNewJoiner = document.getElementById('navNewJoiner');
     const navAdmin = document.getElementById('navAdmin');
     const themeToggle = document.getElementById('themeToggle');
+
+    const progressIndicator = document.getElementById('progressIndicator');
+    const steps = document.querySelectorAll('.progress-step');
 
     const njRegister = document.getElementById('nj-register');
     const njAck = document.getElementById('nj-ack');
@@ -1411,6 +1592,12 @@
     const quizQuestions = document.getElementById('quizQuestions');
     const quizResult = document.getElementById('quizResult');
     const quizTimer = document.getElementById('quizTimer');
+    const questionCounter = document.getElementById('questionCounter');
+    const btnPrevQuestion = document.getElementById('btnPrevQuestion');
+    const btnNextQuestion = document.getElementById('btnNextQuestion');
+    const btnSubmitQuiz = document.getElementById('btnSubmitQuiz');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const videoTime = document.getElementById('videoTime');
 
     const resultBox = document.getElementById('resultBox');
     const btnPrintCertificate = document.getElementById('btnPrintCertificate');
@@ -1470,6 +1657,7 @@
     btnStartVideo.addEventListener('click', startVideoPlayback);
     trainingVideo.addEventListener('timeupdate', checkVideoProgress);
     trainingVideo.addEventListener('ended', handleVideoEnded);
+    btnPlayPause.addEventListener('click', toggleVideoPlayback);
 
     trainingVideo.addEventListener('seeking', function (e) {
       if (!APP_STATE.videoFinished) {
@@ -1503,6 +1691,8 @@
     });
 
     quizForm.addEventListener('submit', handleQuizSubmit);
+    btnPrevQuestion.addEventListener('click', goToPreviousQuestion);
+    btnNextQuestion.addEventListener('click', goToNextQuestion);
 
     btnPrintCertificate.addEventListener('click', generateCertificate);
     btnNextModule.addEventListener('click', showNextModule);
@@ -1695,7 +1885,7 @@
           questionsContainer.removeChild(qs);
           updateQuestionNumbers();
         } else {
-          alert('You need at least one question for the module.');
+          showNotification('You need at least one question for the module.', 'warning');
         }
       });
       questionsContainer.appendChild(qs);
@@ -1713,6 +1903,7 @@
         navAdmin.classList.remove('nav-btn-active');
         showSection(njRegister);
         [njAck, njModuleSelect, njTraining, njResult, autoNextModuleSection, adminLogin, adminDashboard].forEach(hideSection);
+        updateProgressIndicator(1);
       } else {
         navNewJoiner.classList.remove('nav-btn-active');
         navAdmin.classList.add('nav-btn-active');
@@ -1720,6 +1911,20 @@
         if (APP_STATE.adminLoggedIn) showAdminDashboard();
         else showSection(adminLogin);
       }
+    }
+
+    function updateProgressIndicator(step) {
+      steps.forEach((stepEl, index) => {
+        if (index < step - 1) {
+          stepEl.classList.add('step-completed');
+          stepEl.classList.remove('step-active');
+        } else if (index === step - 1) {
+          stepEl.classList.add('step-active');
+          stepEl.classList.remove('step-completed');
+        } else {
+          stepEl.classList.remove('step-active', 'step-completed');
+        }
+      });
     }
 
     function showSection(el){ el.classList.remove('hidden'); }
@@ -1736,6 +1941,7 @@
         njModuleSelect.classList.remove('hidden');
         const infoElement = njModuleSelect.querySelector('.info');
         infoElement.innerHTML = `Welcome back, ${existing.name}! Please select your training module.`;
+        updateProgressIndicator(3);
       } else {
         APP_STATE.currentUser = {
           name: empName.value.trim(),
@@ -1752,6 +1958,7 @@
         njProfileSummary.textContent = `${APP_STATE.currentUser.name} (${APP_STATE.currentUser.department})`;
         njRegister.classList.add('hidden');
         njAck.classList.remove('hidden');
+        updateProgressIndicator(2);
       }
     }
 
@@ -1764,6 +1971,7 @@
     function showModuleSelection() {
       njAck.classList.add('hidden');
       njModuleSelect.classList.remove('hidden');
+      updateProgressIndicator(3);
     }
 
     function renderModuleList() {
@@ -1810,6 +2018,7 @@
       APP_STATE.currentModule = module;
       APP_STATE.videoFinished = false;
       APP_STATE.maxWatched = 0;
+      APP_STATE.currentQuestionIndex = 0;
 
       trainingModuleTitle.textContent = module.title;
       trainingModuleInfo.textContent = module.category;
@@ -1837,6 +2046,19 @@
       njResult.classList.add('hidden');
       njTraining.classList.remove('hidden');
       autoNextModuleSection.classList.add('hidden');
+      
+      updateProgressIndicator(4);
+      updateQuestionNavigation();
+    }
+
+    function toggleVideoPlayback() {
+      if (trainingVideo.paused) {
+        trainingVideo.play();
+        btnPlayPause.textContent = '⏸️';
+      } else {
+        trainingVideo.pause();
+        btnPlayPause.textContent = '⏯️';
+      }
     }
 
     function startVideoPlayback() {
@@ -1844,8 +2066,9 @@
       trainingVideo.play().catch(e => {
         console.error('Error playing video:', e);
         videoControlsOverlay.classList.remove('hidden');
-        alert('Error playing video. Please check if the video file exists.');
+        showNotification('Error playing video. Please check if the video file exists.', 'error');
       });
+      btnPlayPause.textContent = '⏸️';
     }
 
     function updateQuizTimer() {
@@ -1861,7 +2084,7 @@
     }
 
     function handleQuizTimeout() {
-      alert('Time is up! Submitting your quiz automatically.');
+      showNotification('Time is up! Submitting your quiz automatically.', 'warning');
       quizForm.dispatchEvent(new Event('submit'));
     }
 
@@ -1870,6 +2093,11 @@
 
       const progress = (trainingVideo.currentTime / trainingVideo.duration) * 100;
       videoProgressBar.style.width = `${progress}%`;
+
+      // Update video time display
+      const currentTime = formatTime(trainingVideo.currentTime);
+      const duration = formatTime(trainingVideo.duration);
+      videoTime.textContent = `${currentTime} / ${duration}`;
 
       if (!APP_STATE.videoFinished && trainingVideo.currentTime > APP_STATE.maxWatched) {
         APP_STATE.maxWatched = trainingVideo.currentTime;
@@ -1886,6 +2114,12 @@
       }
     }
 
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
     function handleVideoEnded() {
       APP_STATE.videoFinished = true;
       videoStatus.textContent = '✓ Video completed. Quiz unlocked.';
@@ -1895,6 +2129,7 @@
       quizTimer.textContent = '--:--';
       if (APP_STATE.quizTimer) clearInterval(APP_STATE.quizTimer);
       APP_STATE.quizTimer = setInterval(updateQuizTimer, 1000);
+      btnPlayPause.textContent = '⏯️';
     }
 
     function renderQuizQuestions(questions) {
@@ -1902,6 +2137,8 @@
       questions.forEach((q, idx) => {
         const qDiv = document.createElement('div');
         qDiv.className = 'quiz-question';
+        qDiv.id = `question-${idx}`;
+        qDiv.style.display = idx === 0 ? 'block' : 'none';
         let optsHtml = '';
         q.options.forEach((opt, j) => {
           optsHtml += `
@@ -1917,12 +2154,51 @@
         `;
         quizQuestions.appendChild(qDiv);
       });
+      updateQuestionCounter();
+    }
+
+    function goToPreviousQuestion() {
+      if (APP_STATE.currentQuestionIndex > 0) {
+        APP_STATE.currentQuestionIndex--;
+        updateQuestionNavigation();
+      }
+    }
+
+    function goToNextQuestion() {
+      if (APP_STATE.currentQuestionIndex < APP_STATE.currentModule.questions.length - 1) {
+        APP_STATE.currentQuestionIndex++;
+        updateQuestionNavigation();
+      }
+    }
+
+    function updateQuestionNavigation() {
+      // Hide all questions
+      const questions = document.querySelectorAll('.quiz-question');
+      questions.forEach(q => q.style.display = 'none');
+      
+      // Show current question
+      const currentQuestion = document.getElementById(`question-${APP_STATE.currentQuestionIndex}`);
+      if (currentQuestion) {
+        currentQuestion.style.display = 'block';
+      }
+      
+      // Update question counter
+      updateQuestionCounter();
+      
+      // Update button states
+      btnPrevQuestion.disabled = APP_STATE.currentQuestionIndex === 0;
+      btnNextQuestion.disabled = APP_STATE.currentQuestionIndex === APP_STATE.currentModule.questions.length - 1;
+      btnSubmitQuiz.style.display = APP_STATE.currentQuestionIndex === APP_STATE.currentModule.questions.length - 1 ? 'block' : 'none';
+    }
+
+    function updateQuestionCounter() {
+      questionCounter.textContent = `Question ${APP_STATE.currentQuestionIndex + 1} of ${APP_STATE.currentModule.questions.length}`;
     }
 
     async function handleQuizSubmit(e) {
       e.preventDefault();
       if (!APP_STATE.videoFinished) {
-        alert('You must watch the full video before attempting the quiz.');
+        showNotification('You must watch the full video before attempting the quiz.', 'warning');
         return;
       }
       clearInterval(APP_STATE.quizTimer);
@@ -2006,6 +2282,7 @@
 
       njTraining.classList.add('hidden');
       njResult.classList.remove('hidden');
+      updateProgressIndicator(5);
       updateAdminStats();
       renderResultsTable();
       updateCharts();
@@ -2039,7 +2316,7 @@
         startModule(APP_STATE.modules[idx + 1]);
         njResult.classList.add('hidden');
       } else {
-        alert('Congratulations! You have completed all available training modules.');
+        showNotification('Congratulations! You have completed all available training modules.', 'success');
       }
     }
 
@@ -2099,7 +2376,7 @@
 
     function handleBackToModules() {
       if (APP_STATE.currentAttempt && APP_STATE.currentAttempt.passed) {
-        alert('You have already completed this module.');
+        showNotification('You have already completed this module.', 'warning');
         return;
       }
 
@@ -2117,6 +2394,7 @@
       hideSection(njTraining);
       hideSection(njResult);
       showSection(njModuleSelect);
+      updateProgressIndicator(3);
     }
 
     function handleAdminLogin(e) {
@@ -2133,6 +2411,7 @@
       localStorage.setItem('lms_current_admin', admin.username);
       localStorage.setItem('lms_admins', JSON.stringify(APP_STATE.admins));
       showAdminDashboard();
+      showNotification('Admin login successful!', 'success');
     }
 
     function showAdminDashboard() {
@@ -2151,6 +2430,7 @@
       localStorage.removeItem('lms_admin_logged_in');
       localStorage.removeItem('lms_current_admin');
       switchView('admin');
+      showNotification('Logged out successfully.', 'success');
     }
 
     function switchAdminTab(tabName) {
@@ -2218,6 +2498,7 @@
       APP_STATE.admins = APP_STATE.admins.filter(a => a.username !== username);
       localStorage.setItem('lms_admins', JSON.stringify(APP_STATE.admins));
       renderAdminsTable();
+      showNotification('Admin deleted successfully.', 'success');
     }
 
     function handleAddAdmin(e) {
@@ -2227,14 +2508,20 @@
       const confirmPassword = document.getElementById('newAdminPassConfirm').value;
       const role = document.getElementById('newAdminRole').value;
 
-      if (password !== confirmPassword) return alert('Passwords do not match!');
-      if (APP_STATE.admins.find(a => a.username === username)) return alert('Admin already exists!');
+      if (password !== confirmPassword) {
+        showNotification('Passwords do not match!', 'error');
+        return;
+      }
+      if (APP_STATE.admins.find(a => a.username === username)) {
+        showNotification('Admin already exists!', 'error');
+        return;
+      }
 
       APP_STATE.admins.push({ username, password, role, lastLogin: null });
       localStorage.setItem('lms_admins', JSON.stringify(APP_STATE.admins));
       renderAdminsTable();
       addAdminForm.reset();
-      alert('Admin added successfully!');
+      showNotification('Admin added successfully!', 'success');
     }
 
     function handlePasswordChange(e) {
@@ -2243,13 +2530,19 @@
       const newPassword = document.getElementById('newPassword').value;
       const confirmNewPassword = document.getElementById('confirmNewPassword').value;
 
-      if (APP_STATE.currentAdmin.password !== currentPassword) return alert('Current password is incorrect!');
-      if (newPassword !== confirmNewPassword) return alert('New passwords do not match!');
+      if (APP_STATE.currentAdmin.password !== currentPassword) {
+        showNotification('Current password is incorrect!', 'error');
+        return;
+      }
+      if (newPassword !== confirmNewPassword) {
+        showNotification('New passwords do not match!', 'error');
+        return;
+      }
 
       APP_STATE.currentAdmin.password = newPassword;
       localStorage.setItem('lms_admins', JSON.stringify(APP_STATE.admins));
       changePasswordForm.reset();
-      alert('Password changed successfully!');
+      showNotification('Password changed successfully!', 'success');
     }
 
     function filterResultsTable() {
@@ -2261,7 +2554,7 @@
 
     function exportToExcel() {
       if (APP_STATE.attempts.length === 0) {
-        alert('No data to export.');
+        showNotification('No data to export.', 'warning');
         return;
       }
       const data = APP_STATE.attempts.map(a => ({
@@ -2278,6 +2571,7 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Training Results');
       XLSX.writeFile(wb, 'Industrial_Induction_Results.xlsx');
+      showNotification('Data exported successfully!', 'success');
     }
 
     async function handleAddModule(e) {
@@ -2296,7 +2590,10 @@
           });
         }
       });
-      if (questions.length === 0) return alert('Please add at least one question.');
+      if (questions.length === 0) {
+        showNotification('Please add at least one question.', 'warning');
+        return;
+      }
 
       const title = document.getElementById('modTitle').value.trim();
       const category = document.getElementById('modCategory').value.trim();
@@ -2327,7 +2624,7 @@
       questionsContainer.innerHTML = '';
       addQuestionSet();
       renderModuleList();
-      alert('Module added successfully!');
+      showNotification('Module added successfully!', 'success');
     }
 
     function generateModuleId(title) {
@@ -2380,7 +2677,10 @@
           });
         }
       });
-      if (questions.length === 0) return alert('Please add at least one question.');
+      if (questions.length === 0) {
+        showNotification('Please add at least one question.', 'warning');
+        return;
+      }
 
       const title = document.getElementById('modTitle').value.trim();
       const category = document.getElementById('modCategory').value.trim();
@@ -2410,7 +2710,7 @@
       const btn = addModuleForm.querySelector('button[type="submit"]');
       btn.textContent = 'Add Module';
       btn.onclick = null;
-      alert('Module updated successfully!');
+      showNotification('Module updated successfully!', 'success');
     }
 
     async function deleteModule(moduleId) {
@@ -2418,7 +2718,7 @@
       APP_STATE.modules = APP_STATE.modules.filter(m => m.id !== moduleId);
       await deleteModuleFromSheet(moduleId);
       renderModuleList();
-      alert('Module deleted successfully!');
+      showNotification('Module deleted successfully!', 'success');
     }
 
     function handleColorChange(e) {
@@ -2430,6 +2730,7 @@
       APP_STATE.settings.themeColor = color;
       localStorage.setItem('lms_settings', JSON.stringify(APP_STATE.settings));
       updateCharts();
+      showNotification('Theme color updated!', 'success');
     }
 
     function handleSystemSettings(e) {
@@ -2441,7 +2742,7 @@
       APP_STATE.settings.defaultPassMark = parseInt(document.getElementById('defaultPassMark').value,10);
       localStorage.setItem('lms_settings', JSON.stringify(APP_STATE.settings));
       loadSettings();
-      alert('Settings saved successfully!');
+      showNotification('Settings saved successfully!', 'success');
     }
 
     window.deleteAdmin = deleteAdmin;
